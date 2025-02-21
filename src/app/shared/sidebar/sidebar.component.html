@@ -1,0 +1,63 @@
+<button 
+  class="fixed left-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#ffca2d] hover:bg-[#C4A64D] shadow-md transition-all duration-300"
+  [class.hidden]="isOpen" 
+  (click)="toggleSidebar()">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"/>
+  </svg>
+</button>
+
+<!-- Overlay para cerrar el menú -->
+<div 
+  *ngIf="isOpen"
+  class="fixed inset-0 bg-opacity-25 backdrop-blur-sm z-30"
+  (click)="closeSidebar()">
+</div>
+
+<div 
+  class="fixed top-0 -left-[330px] h-screen w-[330px] bg-gray-800 transition-all duration-300 z-40"
+  [class.left-0]="isOpen">
+  <div class="flex h-full flex-col">
+    <!-- Header sin botón de cerrar -->
+    <div class="flex justify-between items-center p-4">
+      <!--<img class="h-8 w-auto" src="assets/images/logo.png" alt="Alfabroker">-->
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 space-y-1 px-2 py-4">
+      <ng-container *ngFor="let route of routes">
+        <a *ngIf="route.requiresAuth"
+          (click)="onMenuItemClick(route.path)"
+          routerLinkActive="bg-gray-900"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer">
+          <span [innerHTML]="sanitizeIcon(route.icon || '')" 
+                class="flex-shrink-0"
+                [style.color]="route.activeColor && isRouteActive(route.path) ? route.activeColor : 'currentColor'">
+          </span>
+          <span [style.color]="route.activeColor && isRouteActive(route.path) ? route.activeColor : 'currentColor'">
+            {{ route.title }}
+          </span>
+        </a>
+      </ng-container>
+    </nav>
+
+    <!-- User Profile Section -->
+    <div class="border-t border-gray-700 p-4">
+      <div class="flex items-center">
+        <div>
+          <img class="inline-block h-9 w-9 rounded-full" src="user.svg" alt="User avatar">
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-white">{{ (user$ | async)?.username || 'Usuario' }}</p>
+          <button 
+            class="text-xs font-medium text-gray-300 hover:text-white"
+            (click)="logout()">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
