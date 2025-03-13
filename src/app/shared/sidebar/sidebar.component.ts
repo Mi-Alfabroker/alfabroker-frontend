@@ -26,6 +26,12 @@ export class SidebarComponent {
   routes: NavRoute[] = NAV_ROUTES;
   user$ = this.store.select(AuthSelectors.selectUser);
 
+  ngOnInit(): void {
+    this.user$.subscribe(user => {
+      console.log("user", user);
+    });
+  }
+
   toggleSidebar() {
     this.isOpen = !this.isOpen;
   }
@@ -49,7 +55,9 @@ export class SidebarComponent {
   }
 
   onMenuItemClick(path: string): void {
-    this.router.navigate([path]);
     this.closeSidebar();
+    setTimeout(() => {
+      this.router.navigate([path]);
+    }, 300);
   }
 }

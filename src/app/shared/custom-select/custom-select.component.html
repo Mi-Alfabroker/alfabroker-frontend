@@ -1,0 +1,67 @@
+<div class="relative pb-1" [class.opacity-60]="disabled">
+  <label *ngIf="label" class="absolute -top-5 left-0 text-xs font-medium text-gray-700">
+    {{ label }} <span *ngIf="required" class="text-red-500">*</span>
+  </label>
+  
+  <div 
+    class="w-full py-2 px-0 text-sm border-0 border-b transition-colors flex items-center justify-between cursor-pointer relative"
+    [class.border-red-500]="invalid"
+    [class.border-gray-300]="!invalid"
+    [class.focus:border-[#d4af37]]="!invalid"
+    [class.focus:border-b-2]="!invalid"
+    [class.bg-transparent]="!isOpen"
+    (click)="toggleDropdown()"
+  >
+    <div class="flex-grow truncate" [class.text-gray-400]="!selectedLabel">
+      {{ selectedLabel || placeholder }}
+    </div>
+    
+    <div class="flex-shrink-0 text-gray-700">
+      <svg 
+        class="fill-current h-4 w-4 transition-transform duration-200" 
+        [class.transform]="isOpen" 
+        [class.rotate-180]="isOpen"
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 20 20"
+      >
+        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+      </svg>
+    </div>
+    
+    <!-- Línea dorada animada -->
+    <div 
+      *ngIf="isOpen" 
+      class="absolute bottom-0 left-0 h-0.5 bg-[#d4af37] animate-expandWidth"
+      [class.w-full]="isOpen"
+    ></div>
+  </div>
+  
+  <!-- Dropdown -->
+  <div 
+    *ngIf="isOpen" 
+    class="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+    [style.width.px]="getDropdownWidth()"
+    [style.top.px]="getDropdownTopPosition()"
+    [style.left.px]="getDropdownLeftPosition()"
+    (click)="$event.stopPropagation()"
+  >
+    <div 
+      *ngFor="let option of options" 
+      class="px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer transition-colors"
+      [class.text-[#d4af37]]="option.value === selectedValue"
+      [class.font-medium]="option.value === selectedValue"
+      (click)="selectOption(option, $event)"
+    >
+      {{ option.label }}
+    </div>
+    
+    <div *ngIf="options.length === 0" class="px-4 py-2 text-sm text-gray-500 italic">
+      No hay opciones disponibles
+    </div>
+  </div>
+  
+  <!-- Mensaje de error -->
+  <div *ngIf="invalid && errorMessage" class="text-red-500 text-xs mt-1">
+    {{ errorMessage }}
+  </div>
+</div>

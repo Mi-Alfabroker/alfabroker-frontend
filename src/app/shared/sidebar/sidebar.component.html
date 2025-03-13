@@ -49,7 +49,7 @@
           <img class="inline-block h-9 w-9 rounded-full" src="user.svg" alt="User avatar">
         </div>
         <div class="ml-3">
-          <p class="text-sm font-medium text-white">{{ (user$ | async)?.username || 'Usuario' }}</p>
+          <p class="text-sm font-medium text-white">{{ (user$ | async)?.nombre || 'Usuario' }}</p>
           <button 
             class="text-xs font-medium text-gray-300 hover:text-white"
             (click)="logout()">

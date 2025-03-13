@@ -38,8 +38,8 @@ export class AuthService {
             id: tokenData.id,
             email: tokenData.email,
             type: tokenData.type,
-            username: tokenData.email.split('@')[0],
-            status: 'active'
+            nombre: tokenData.nombre || tokenData.email.split('@')[0],
+            estado: tokenData.estado || 'active'
           }
         }));
       } catch (error) {
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/sign-in`, { email, password })
+    return this.http.post<AuthResponse>(`${this.API_URL}/signin`, { email, password })
       .pipe(
         tap(response => {
           localStorage.setItem('token', response.data.token);

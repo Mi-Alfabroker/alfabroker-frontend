@@ -11,3 +11,34 @@ paleta de colores
 #ffca2d
 
 */
+
+/* Estilos globales para inputs */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3) !important; /* Color dorado con baja opacidad */
+  border-color: #d4af37 !important;
+}
+
+/* Estilos para inputs dentro de modales */
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus,
+.modal-content button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3) !important;
+  border-color: #d4af37 !important;
+}
+
+/* Eliminar el outline negro predeterminado de Chrome */
+*:focus {
+  outline: none !important;
+}
+
+/* Estilo personalizado para el focus visible (accesibilidad) */
+*:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.5) !important;
+  outline-offset: 2px !important;
+}

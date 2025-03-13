@@ -1,0 +1,137 @@
+/* Estilos para el componente modal */
+
+/* Animación de entrada del modal */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animación para el fondo del modal */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Aplicar animaciones */
+.fixed {
+  animation: backdropFadeIn 0.2s ease-out;
+}
+
+.fixed > div {
+  animation: modalFadeIn 0.3s ease-out;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Estilos para inputs dentro del modal */
+:host ::ng-deep input:focus,
+:host ::ng-deep select:focus,
+:host ::ng-deep textarea:focus,
+:host ::ng-deep button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep input,
+:host ::ng-deep select,
+:host ::ng-deep textarea {
+  transition: border-color 0.2s ease;
+}
+
+:host ::ng-deep input:focus,
+:host ::ng-deep select:focus,
+:host ::ng-deep textarea:focus {
+  border-color: #d4af37 !important;
+}
+
+/* Estilos para pantallas grandes */
+@media (min-width: 1024px) {
+  .fixed > div {
+    min-width: 700px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  /* Aumentar el padding en pantallas grandes */
+  .p-4 {
+    padding: 1.25rem !important;
+  }
+  
+  /* Mejorar la apariencia del encabezado en pantallas grandes */
+  .sticky {
+    padding: 1rem 1.5rem !important;
+  }
+  
+  /* Título más grande en pantallas grandes */
+  .text-lg {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 640px) {
+  .fixed > div {
+    margin: 0 auto;
+    width: 95% !important;
+    max-width: 95% !important;
+    border-radius: 12px !important;
+  }
+  
+  .fixed {
+    padding: 0.5rem;
+  }
+  
+  /* Reducir el padding en móviles */
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  
+  /* Mejorar la apariencia de los botones en móviles */
+  button {
+    min-height: 44px; /* Área táctil mínima recomendada */
+    touch-action: manipulation; /* Optimizar para toques */
+  }
+}
+
+/* Asegurar que el modal se ajuste correctamente en pantallas pequeñas */
+@media (max-height: 500px) {
+  .fixed {
+    align-items: flex-start;
+    padding-top: 0.5rem;
+  }
+}
+
+/* Mejorar la apariencia del scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #c19b2e;
+}
+
+/* Prevenir el desplazamiento del fondo cuando el modal está abierto */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+} 

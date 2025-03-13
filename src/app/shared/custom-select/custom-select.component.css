@@ -1,0 +1,45 @@
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-expandWidth {
+  animation: expandWidth 0.3s ease-out forwards;
+}
+
+/* Estilo para el scrollbar del dropdown */
+div::-webkit-scrollbar {
+  width: 6px;
+}
+
+div::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+div::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 10px;
+}
+
+div::-webkit-scrollbar-thumb:hover {
+  background: #c19b2e;
+}
+
+/* Estilos para el dropdown */
+:host {
+  position: relative;
+  display: block;
+}
+
+.fixed {
+  position: fixed !important;
+}
+
+.z-50 {
+  z-index: 9999 !important;
+}

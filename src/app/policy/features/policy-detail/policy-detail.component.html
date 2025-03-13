@@ -1,0 +1,499 @@
+<div class="container mx-auto p-4 md:p-6 md:pl-16 lg:pl-20 xl:pl-24 bg-gray-50 min-h-screen">
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-lg">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-10">
+    <svg class="animate-spin h-8 w-8 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <span class="ml-3 text-gray-600">Cargando detalles de la póliza...</span>
+  </div>
+
+  <div *ngIf="!isLoading && policy">
+    <!-- Encabezado con información básica -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+      <div class="flex flex-col md:flex-row justify-between items-start mb-4">
+        <div class="flex items-center mb-4 md:mb-0">
+          <div class="bg-yellow-400 rounded-full p-3 mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">{{ policy.title }}</h1>
+            <div class="flex items-center mt-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <p class="text-sm text-gray-600">Asignada a <span class="font-medium">{{ assignedUser?.nombre || 'Usuario ' + policy.id_user }}</span></p>
+            </div>
+            <div class="flex items-center mt-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="text-sm text-gray-600">Fecha: <span class="font-medium">{{ policy.fecha_inicio | date:'dd/MM/yyyy' }}</span></p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Planta</p>
+            <p class="text-sm font-medium">{{ policy.plant }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Producto</p>
+            <p class="text-sm font-medium">{{ policy.producto }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Versión</p>
+            <p class="text-sm font-medium">{{ policy.version }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Código</p>
+            <p class="text-sm font-medium">{{ policy.code }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Componentes de la póliza -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-gray-800">Coberturas</h2>
+        
+        <div class="flex space-x-2">
+          <button *ngIf="canEdit()" (click)="toggleEdit()" class="bg-sky-900 text-white hover:bg-sky-800 px-4 py-2 rounded-lg flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            {{ isEditing ? 'Cancelar' : 'Editar' }}
+          </button>
+          
+          <button *ngIf="isEditing" (click)="saveChanges()" class="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Guardar
+          </button>
+          
+          <button (click)="goBack()" class="bg-gray-200 text-gray-800 hover:bg-gray-300 px-4 py-2 rounded-lg flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Volver
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tabla de componentes -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead>
+            <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+              <th class="py-3 px-4 text-left">Código</th>
+              <th class="py-3 px-4 text-left">Cobertura</th>
+              <th class="py-3 px-4 text-right">Valor</th>
+              <th class="py-3 px-4 text-right">Deducible</th>
+              <th class="py-3 px-4 text-right">%</th>
+              <th class="py-3 px-4 text-center"></th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600 text-sm">
+            <tr *ngFor="let component of components; let i = index" class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="py-3 px-4">{{ component.codigo }}</td>
+              <td class="py-3 px-4">{{ component.material }}</td>
+              <td class="py-3 px-4 text-right">{{ component.peso }}</td>
+              <td class="py-3 px-4 text-right">{{ policy.coberturas && policy.coberturas[i] ? policy.coberturas[i].deducible : '-' }}</td>
+              <td class="py-3 px-4 text-right">{{ component.porcentaje }}%</td>
+              <td class="py-3 px-4 text-center">
+                <button *ngIf="isEditing" class="text-red-500 hover:text-red-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="bg-gray-50 font-medium">
+              <td colspan="2" class="py-3 px-4 text-right">Total:</td>
+              <td class="py-3 px-4 text-right">{{ getTotalAmount() }}</td>
+              <td class="py-3 px-4 text-right">-</td>
+              <td class="py-3 px-4 text-right">100%</td>
+              <td class="py-3 px-4"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Información de la propiedad asegurada -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-gray-800">Información de la Propiedad Asegurada</h2>
+      </div>
+      
+      <!-- Datos del vehículo -->
+      <div *ngIf="isPolicyType(TipoPoliza.VEHICULOS) && getSpecificData()">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Placa</p>
+            <p class="text-base font-medium">{{ getSpecificData().placa }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Marca</p>
+            <p class="text-base font-medium">{{ getSpecificData().marca }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Modelo</p>
+            <p class="text-base font-medium">{{ getSpecificData().modelo }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Año</p>
+            <p class="text-base font-medium">{{ getSpecificData().ano }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Código Fasecolda</p>
+            <p class="text-base font-medium">{{ getSpecificData().cod_fasecolda }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Cilindraje</p>
+            <p class="text-base font-medium">{{ getSpecificData().cilindraje }} cc</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Tipo de Uso</p>
+            <p class="text-base font-medium">{{ getSpecificData().tipo_uso }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Tipo de Vehículo</p>
+            <p class="text-base font-medium">{{ getSpecificData().tipo_vehiculo }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor del Vehículo</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_vehiculo | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor de Accesorios</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_accesorios | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos del hogar -->
+      <div *ngIf="isPolicyType(TipoPoliza.HOGAR) && getSpecificData()">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Nombre</p>
+            <p class="text-base font-medium">{{ getSpecificData().nombre }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Teléfono</p>
+            <p class="text-base font-medium">{{ getSpecificData().telefono }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Ciudad</p>
+            <p class="text-base font-medium">{{ getSpecificData().ciudad }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Dirección</p>
+            <p class="text-base font-medium">{{ getSpecificData().direccion }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Tipo de Inmueble</p>
+            <p class="text-base font-medium">{{ getSpecificData().tipo_inmueble }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Pisos</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_pisos }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Año de Construcción</p>
+            <p class="text-base font-medium">{{ getSpecificData().ano_construccion }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor del Inmueble</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_inmueble | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor de Contenidos Normales</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_contenidos_normales | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor de Equipos Electrónicos</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_equipos_electronicos | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor de Contenidos Especiales</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_contenidos_especiales | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos de copropiedad -->
+      <div *ngIf="isPolicyType(TipoPoliza.COPROPIEDADES) && getSpecificData()">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Nombre</p>
+            <p class="text-base font-medium">{{ getSpecificData().nombre }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Dirección</p>
+            <p class="text-base font-medium">{{ getSpecificData().direccion }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Teléfono</p>
+            <p class="text-base font-medium">{{ getSpecificData().telefono }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Email</p>
+            <p class="text-base font-medium">{{ getSpecificData().email }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Nombre del Responsable</p>
+            <p class="text-base font-medium">{{ getSpecificData().nombre_responsable }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Teléfono del Responsable</p>
+            <p class="text-base font-medium">{{ getSpecificData().telefono_responsable }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Año de Construcción</p>
+            <p class="text-base font-medium">{{ getSpecificData().ano_construccion }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Estrato</p>
+            <p class="text-base font-medium">{{ getSpecificData().estrato }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Tipo de Copropiedad</p>
+            <p class="text-base font-medium">{{ getSpecificData().tipo_copropiedad }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Torres</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_torres }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Pisos</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_pisos }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Casas</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_casas }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Apartamentos</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_aptos }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Locales</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_locales }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Número de Sótanos</p>
+            <p class="text-base font-medium">{{ getSpecificData().num_sotanos }}</p>
+          </div>
+        </div>
+
+        <!-- Valores asegurados para copropiedad -->
+        <h3 class="text-md font-bold text-gray-800 mt-6 mb-3">Valores Asegurados</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Edificio Área Común</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_edificio_area_comun | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Muebles</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_muebles | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Edificio Área Privada</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_edificio_area_privada | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Dinero</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_dinero | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Maquinaria</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_maquinaria | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor RCE</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_rce | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor EEE</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_eee | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor DA</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_da | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valores Anual</p>
+            <p class="text-base font-medium">{{ getSpecificData().tvalores_anual | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valores Despacho</p>
+            <p class="text-base font-medium">{{ getSpecificData().tvalores_despacho | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Valor Manejo</p>
+            <p class="text-base font-medium">{{ getSpecificData().valor_manejo | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+        </div>
+
+        <!-- Consejo de copropiedad -->
+        <h3 class="text-md font-bold text-gray-800 mt-6 mb-3">Consejo de Copropiedad</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                <th class="py-3 px-4 text-left">Nombre</th>
+                <th class="py-3 px-4 text-left">Teléfono</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let miembro of getSpecificData().consejo" class="border-b border-gray-200 hover:bg-gray-100">
+                <td class="py-3 px-4 text-left">{{ miembro.nombre }}</td>
+                <td class="py-3 px-4 text-left">{{ miembro.telefono }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Datos generales para otros tipos de pólizas -->
+      <div *ngIf="!isPolicyType(TipoPoliza.VEHICULOS) && !isPolicyType(TipoPoliza.HOGAR) && !isPolicyType(TipoPoliza.COPROPIEDADES) && getSpecificData()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Subtipo</p>
+            <p class="text-base font-medium">{{ getSpecificData().subtipo }}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Bien Asegurable</p>
+            <p class="text-base font-medium">{{ getSpecificData().bien_asegurable }}</p>
+          </div>
+        </div>
+
+        <!-- Coberturas específicas para datos generales -->
+        <div *ngIf="getSpecificData().cobertura && getSpecificData().cobertura.length > 0">
+          <h3 class="text-md font-bold text-gray-800 mt-6 mb-3">Coberturas Específicas</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+              <thead>
+                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                  <th class="py-3 px-4 text-left">Nombre</th>
+                  <th class="py-3 px-4 text-right">Valor</th>
+                  <th class="py-3 px-4 text-right">Deducible</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cob of getSpecificData().cobertura" class="border-b border-gray-200 hover:bg-gray-100">
+                  <td class="py-3 px-4 text-left">{{ cob.nombre }}</td>
+                  <td class="py-3 px-4 text-right">{{ cob.valor }}</td>
+                  <td class="py-3 px-4 text-right">{{ cob.deducible }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del beneficiario -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-gray-800">Información del Beneficiario</h2>
+      </div>
+      
+      <div *ngIf="policy.beneficiario" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Nombre</p>
+          <p class="text-base font-medium">{{ policy.beneficiario.nombre }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Identificación</p>
+          <p class="text-base font-medium">{{ policy.beneficiario.identificacion }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Parentesco</p>
+          <p class="text-base font-medium">{{ policy.beneficiario.parentesco }}</p>
+        </div>
+      </div>
+      
+      <div *ngIf="!policy.beneficiario" class="text-center py-4">
+        <p class="text-gray-500">No hay información de beneficiario registrada</p>
+      </div>
+    </div>
+
+    <!-- Información de la póliza -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-gray-800">Información de la Póliza</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Fecha de Inicio</p>
+          <p class="text-base font-medium">{{ policy.fecha_inicio }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Fecha de Fin</p>
+          <p class="text-base font-medium">{{ policy.fecha_fin }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Prima Neta</p>
+          <p class="text-base font-medium">{{ policy.prima_neta | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">IVA</p>
+          <p class="text-base font-medium">{{ policy.iva | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Gastos de Expedición</p>
+          <p class="text-base font-medium">{{ policy.gastos_expedicion | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Total</p>
+          <p class="text-base font-medium">{{ policy.prima_neta + policy.iva + policy.gastos_expedicion | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Modificado por</p>
+          <p class="text-base font-medium">{{ policy.modifiedBy }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600">Fecha de Modificación</p>
+          <p class="text-base font-medium">{{ policy.modifiedDate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex justify-between mt-6">
+      <button (click)="goBack()" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-6 py-2 rounded-lg flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Volver
+      </button>
+      
+      <button *ngIf="canEdit()" (click)="toggleEdit()" class="bg-sky-900 text-white hover:bg-sky-800 px-6 py-2 rounded-lg flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        {{ isEditing ? 'Guardar Cambios' : 'Editar Póliza' }}
+      </button>
+    </div>
+  </div>
+</div>

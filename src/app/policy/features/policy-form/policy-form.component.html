@@ -1,0 +1,629 @@
+<div class="w-full max-w-4xl mx-auto">
+  <!-- Indicador de pasos -->
+  <div class="mb-3">
+    <div class="flex items-center justify-between">
+      <div *ngFor="let step of [1, 2, 3]; let i = index" 
+           class="flex-1 flex flex-col items-center">
+        <div [class]="'w-8 h-8 rounded-full flex items-center justify-center text-sm ' + 
+                      (currentStep > i+1 ? 'bg-green-500 text-white' : 
+                       currentStep === i+1 ? 'bg-[#d4af37] text-white' : 
+                       'bg-gray-200 text-gray-500')">
+          {{ i + 1 }}
+        </div>
+        <div class="text-xs mt-1 text-center" [class.font-medium]="currentStep === i+1">
+          {{ i === 0 ? 'Información básica' : i === 1 ? 'Información financiera' : 'Detalles específicos' }}
+        </div>
+      </div>
+    </div>
+    <div class="flex mt-1">
+      <div class="h-1 flex-1" [class.bg-[#d4af37]]="currentStep > 1" [class.bg-gray-200]="currentStep <= 1"></div>
+      <div class="h-1 flex-1" [class.bg-[#d4af37]]="currentStep > 2" [class.bg-gray-200]="currentStep <= 2"></div>
+    </div>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-3 rounded text-sm">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-2">
+        <p class="text-xs">{{ error }}</p>
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="policyForm" (ngSubmit)="onSubmit()">
+    <!-- Paso 1: Información básica -->
+    <div *ngIf="currentStep === 1">
+      <h3 class="text-md font-medium text-gray-900 mb-5">Información básica de la póliza</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="relative">
+          <app-custom-select
+            formControlName="tipo_poliza"
+            [options]="tipoPolizaSelectOptions"
+            label="Tipo de póliza"
+            [required]="true"
+            [invalid]="!!(policyForm.get('tipo_poliza')?.invalid && policyForm.get('tipo_poliza')?.touched)"
+            errorMessage="Tipo de póliza es requerido"
+          ></app-custom-select>
+        </div>
+        
+        <div class="relative">
+          <app-custom-select
+            formControlName="id_aseguradora"
+            [options]="aseguradoraSelectOptions"
+            label="Aseguradora"
+            [required]="true"
+            placeholder="Seleccione una aseguradora"
+            [invalid]="!!(policyForm.get('id_aseguradora')?.invalid && policyForm.get('id_aseguradora')?.touched)"
+            errorMessage="Aseguradora es requerida"
+          ></app-custom-select>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="relative">
+          <app-custom-datepicker
+            formControlName="fecha_inicio"
+            label="Fecha de inicio"
+            [required]="true"
+            [invalid]="!!(policyForm.get('fecha_inicio')?.invalid && policyForm.get('fecha_inicio')?.touched)"
+            errorMessage="Fecha de inicio es requerida"
+          ></app-custom-datepicker>
+        </div>
+        
+        <div class="relative">
+          <app-custom-datepicker
+            formControlName="fecha_fin"
+            label="Fecha de fin"
+            [required]="true"
+            [invalid]="!!(policyForm.get('fecha_fin')?.invalid && policyForm.get('fecha_fin')?.touched)"
+            errorMessage="Fecha de fin es requerida"
+          ></app-custom-datepicker>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Paso 2: Información financiera -->
+    <div *ngIf="currentStep === 2">
+      <h3 class="text-md font-medium text-gray-900 mb-5">Información financiera</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="relative pb-1">
+          <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Prima neta <span class="text-red-500">*</span></label>
+          <input type="text" formControlName="prima_neta" placeholder="Ingrese prima neta" 
+                 class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          <div *ngIf="policyForm.get('prima_neta')?.invalid && policyForm.get('prima_neta')?.touched" class="text-red-500 text-xs mt-1">
+            <span *ngIf="policyForm.get('prima_neta')?.errors?.['required']">Prima neta es requerida</span>
+            <span *ngIf="policyForm.get('prima_neta')?.errors?.['min']">Prima neta debe ser mayor a 0</span>
+            <span *ngIf="policyForm.get('prima_neta')?.errors?.['numberOnly']">Solo se permiten números</span>
+          </div>
+        </div>
+        
+        <div class="relative pb-1">
+          <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">IVA <span class="text-red-500">*</span></label>
+          <input type="text" formControlName="iva" placeholder="Ingrese IVA" 
+                 class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          <div *ngIf="policyForm.get('iva')?.invalid && policyForm.get('iva')?.touched" class="text-red-500 text-xs mt-1">
+            <span *ngIf="policyForm.get('iva')?.errors?.['required']">IVA es requerido</span>
+            <span *ngIf="policyForm.get('iva')?.errors?.['min']">IVA debe ser mayor o igual a 0</span>
+            <span *ngIf="policyForm.get('iva')?.errors?.['numberOnly']">Solo se permiten números</span>
+          </div>
+        </div>
+        
+        <div class="relative pb-1">
+          <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Gastos de expedición <span class="text-red-500">*</span></label>
+          <input type="text" formControlName="gastos_expedicion" placeholder="Ingrese gastos de expedición" 
+                 class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          <div *ngIf="policyForm.get('gastos_expedicion')?.invalid && policyForm.get('gastos_expedicion')?.touched" class="text-red-500 text-xs mt-1">
+            <span *ngIf="policyForm.get('gastos_expedicion')?.errors?.['required']">Gastos de expedición son requeridos</span>
+            <span *ngIf="policyForm.get('gastos_expedicion')?.errors?.['min']">Gastos de expedición deben ser mayor o igual a 0</span>
+            <span *ngIf="policyForm.get('gastos_expedicion')?.errors?.['numberOnly']">Solo se permiten números</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="text-sm font-medium text-gray-700 mb-3">Beneficiario (Opcional)</h4>
+        
+        <div formGroupName="beneficiario" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 pt-3">
+          <div class="relative pb-1">
+            <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Nombre</label>
+            <input type="text" formControlName="nombre" placeholder="Nombre del beneficiario" 
+                   class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          </div>
+          
+          <div class="relative pb-1">
+            <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Identificación</label>
+            <input type="text" formControlName="identificacion" placeholder="Identificación" 
+                   class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          </div>
+          
+          <div class="relative pb-1">
+            <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Parentesco</label>
+            <input type="text" formControlName="parentesco" placeholder="Parentesco" 
+                   class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Paso 3: Información específica según tipo de póliza -->
+    <div *ngIf="currentStep === 3">
+      <h3 class="text-md font-medium text-gray-900 mb-5">Información específica</h3>
+      
+      <!-- Datos específicos según tipo de póliza -->
+      <div formGroupName="data">
+        <!-- Vehículos -->
+        <div *ngIf="policyForm.get('tipo_poliza')?.value === 'vehiculos'">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Placa</label>
+              <input type="text" formControlName="placa" placeholder="Ingrese placa" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('placa')?.invalid && policyForm.get('data')?.get('placa')?.touched" class="text-red-500 text-xs mt-1">
+                Placa es requerida
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Marca</label>
+              <input type="text" formControlName="marca" placeholder="Ingrese marca" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('marca')?.invalid && policyForm.get('data')?.get('marca')?.touched" class="text-red-500 text-xs mt-1">
+                Marca es requerida
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Modelo</label>
+              <input type="text" formControlName="modelo" placeholder="Ingrese modelo" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('modelo')?.invalid && policyForm.get('data')?.get('modelo')?.touched" class="text-red-500 text-xs mt-1">
+                Modelo es requerido
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Año</label>
+              <input type="text" formControlName="ano" placeholder="Ingrese año" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('ano')?.invalid && policyForm.get('data')?.get('ano')?.touched" class="text-red-500 text-xs mt-1">
+                <span *ngIf="policyForm.get('data')?.get('ano')?.errors?.['required']">Año es requerido</span>
+                <span *ngIf="policyForm.get('data')?.get('ano')?.errors?.['numberOnly']">Solo se permiten números</span>
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Tipo de vehículo</label>
+              <app-custom-select
+                formControlName="tipo_vehiculo"
+                [options]="tipoVehiculoOptions"
+                [invalid]="!!(policyForm.get('data')?.get('tipo_vehiculo')?.invalid && policyForm.get('data')?.get('tipo_vehiculo')?.touched)"
+                errorMessage="Tipo de vehículo es requerido"
+              ></app-custom-select>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Tipo de uso</label>
+              <app-custom-select
+                formControlName="tipo_uso"
+                [options]="tipoUsoOptions"
+                [invalid]="!!(policyForm.get('data')?.get('tipo_uso')?.invalid && policyForm.get('data')?.get('tipo_uso')?.touched)"
+                errorMessage="Tipo de uso es requerido"
+              ></app-custom-select>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Cilindraje</label>
+              <input type="text" formControlName="cilindraje" placeholder="Ingrese cilindraje" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('cilindraje')?.invalid && policyForm.get('data')?.get('cilindraje')?.touched" class="text-red-500 text-xs mt-1">
+                <span *ngIf="policyForm.get('data')?.get('cilindraje')?.errors?.['required']">Cilindraje es requerido</span>
+                <span *ngIf="policyForm.get('data')?.get('cilindraje')?.errors?.['numberOnly']">Solo se permiten números</span>
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Código Fasecolda</label>
+              <input type="text" formControlName="cod_fasecolda" placeholder="Código Fasecolda" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor del vehículo</label>
+              <input type="text" formControlName="valor_vehiculo" placeholder="Ingrese valor" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('valor_vehiculo')?.invalid && policyForm.get('data')?.get('valor_vehiculo')?.touched" class="text-red-500 text-xs mt-1">
+                <span *ngIf="policyForm.get('data')?.get('valor_vehiculo')?.errors?.['required']">Valor del vehículo es requerido</span>
+                <span *ngIf="policyForm.get('data')?.get('valor_vehiculo')?.errors?.['numberOnly']">Solo se permiten números</span>
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor de accesorios</label>
+              <input type="text" formControlName="valor_accesorios" placeholder="Ingrese valor accesorios" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hogar -->
+        <div *ngIf="policyForm.get('tipo_poliza')?.value === 'hogar'">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Dirección</label>
+              <input type="text" formControlName="direccion" placeholder="Ingrese dirección" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('direccion')?.invalid && policyForm.get('data')?.get('direccion')?.touched" class="text-red-500 text-xs mt-1">
+                Dirección es requerida
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Ciudad</label>
+              <input type="text" formControlName="ciudad" placeholder="Ingrese ciudad" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('ciudad')?.invalid && policyForm.get('data')?.get('ciudad')?.touched" class="text-red-500 text-xs mt-1">
+                Ciudad es requerida
+              </div>
+            </div>
+            
+            <!-- Más campos para hogar... -->
+          </div>
+        </div>
+        
+        <!-- Copropiedades -->
+        <div *ngIf="policyForm.get('tipo_poliza')?.value === 'copropiedades'">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Nombre <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Ingrese nombre" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('nombre')?.invalid && policyForm.get('data')?.get('nombre')?.touched" class="text-red-500 text-xs mt-1">
+                Nombre es requerido
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Dirección <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="direccion" placeholder="Ingrese dirección" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('direccion')?.invalid && policyForm.get('data')?.get('direccion')?.touched" class="text-red-500 text-xs mt-1">
+                Dirección es requerida
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Teléfono <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="telefono" placeholder="Ingrese teléfono" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('telefono')?.invalid && policyForm.get('data')?.get('telefono')?.touched" class="text-red-500 text-xs mt-1">
+                Teléfono es requerido
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
+              <input type="email" formControlName="email" placeholder="Ingrese email" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('email')?.invalid && policyForm.get('data')?.get('email')?.touched" class="text-red-500 text-xs mt-1">
+                Email es requerido y debe ser válido
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Estrato <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="estrato" placeholder="Ingrese estrato" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Tipo de copropiedad <span class="text-red-500">*</span></label>
+              <app-custom-select
+                formControlName="tipo_copropiedad"
+                [options]="tipoCopropiedadOptions"
+                [required]="true"
+                [invalid]="!!(policyForm.get('data')?.get('tipo_copropiedad')?.invalid && policyForm.get('data')?.get('tipo_copropiedad')?.touched)"
+                errorMessage="Tipo de copropiedad es requerido"
+              ></app-custom-select>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Año de construcción <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="ano_construccion" placeholder="Ingrese año de construcción" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de torres <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="num_torres" placeholder="Ingrese número de torres" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de pisos <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="num_pisos" placeholder="Ingrese número de pisos" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de apartamentos <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="num_aptos" placeholder="Ingrese número de apartamentos" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de casas</label>
+              <input type="text" formControlName="num_casas" placeholder="Ingrese número de casas" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de locales</label>
+              <input type="text" formControlName="num_locales" placeholder="Ingrese número de locales" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Número de sótanos</label>
+              <input type="text" formControlName="num_sotanos" placeholder="Ingrese número de sótanos" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor edificio área común <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="valor_edificio_area_comun" placeholder="Ingrese valor edificio área común" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor edificio área privada <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="valor_edificio_area_privada" placeholder="Ingrese valor edificio área privada" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor muebles</label>
+              <input type="text" formControlName="valor_muebles" placeholder="Ingrese valor muebles" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor maquinaria</label>
+              <input type="text" formControlName="valor_maquinaria" placeholder="Ingrese valor maquinaria" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor dinero</label>
+              <input type="text" formControlName="valor_dinero" placeholder="Ingrese valor dinero" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor manejo</label>
+              <input type="text" formControlName="valor_manejo" placeholder="Ingrese valor manejo" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor RCE</label>
+              <input type="text" formControlName="valor_rce" placeholder="Ingrese valor RCE" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor DA</label>
+              <input type="text" formControlName="valor_da" placeholder="Ingrese valor DA" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor EEE</label>
+              <input type="text" formControlName="valor_eee" placeholder="Ingrese valor EEE" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valores anuales</label>
+              <input type="text" formControlName="tvalores_anual" placeholder="Ingrese valores anuales" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valores despacho</label>
+              <input type="text" formControlName="tvalores_despacho" placeholder="Ingrese valores despacho" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Nombre responsable <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="nombre_responsable" placeholder="Ingrese nombre responsable" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('nombre_responsable')?.invalid && policyForm.get('data')?.get('nombre_responsable')?.touched" class="text-red-500 text-xs mt-1">
+                Nombre del responsable es requerido
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Teléfono responsable <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="telefono_responsable" placeholder="Ingrese teléfono responsable" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="policyForm.get('data')?.get('telefono_responsable')?.invalid && policyForm.get('data')?.get('telefono_responsable')?.touched" class="text-red-500 text-xs mt-1">
+                Teléfono del responsable es requerido
+              </div>
+            </div>
+          </div>
+          
+          <!-- Consejo -->
+          <div class="mt-6">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-medium text-gray-800">Consejo</h4>
+              <button type="button" (click)="addConsejero()" 
+                      class="py-1 px-3 text-xs font-medium text-white bg-[#d4af37] rounded hover:bg-[#c19b2e] transition-colors">
+                Añadir miembro
+              </button>
+            </div>
+            
+            <div formArrayName="consejo">
+              <div *ngFor="let consejero of consejoArray.controls; let i = index" [formGroupName]="i" 
+                   class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 border border-gray-200 rounded-md shadow-sm">
+                <div class="relative pb-1">
+                  <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Nombre</label>
+                  <input type="text" formControlName="nombre" placeholder="Ingrese nombre" 
+                         class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+                </div>
+                
+                <div class="relative pb-1">
+                  <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Teléfono</label>
+                  <div class="flex">
+                    <input type="text" formControlName="telefono" placeholder="Ingrese teléfono" 
+                           class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+                    <button type="button" (click)="removeConsejero(i)" 
+                            class="ml-2 p-1 text-white bg-red-500 rounded hover:bg-red-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Coberturas -->
+      <div class="mt-6">
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="text-sm font-medium text-gray-800">Coberturas</h4>
+          <div class="flex space-x-2" *ngIf="selectedAseguradora">
+            <app-custom-select
+              #coberturaSelect
+              [options]="coberturasSelectOptions"
+              placeholder="Seleccionar cobertura..."
+              class="w-48"
+            ></app-custom-select>
+            <button type="button" 
+                    (click)="addCoberturaFromSelect(coberturaSelect.selectedValue)" 
+                    class="py-1 px-3 text-xs font-medium text-white bg-[#d4af37] rounded hover:bg-[#c19b2e] transition-colors">
+              Añadir
+            </button>
+          </div>
+          <div *ngIf="!selectedAseguradora" class="text-xs text-gray-500">
+            Seleccione una aseguradora para ver las coberturas disponibles
+          </div>
+        </div>
+        
+        <div *ngIf="coberturasArray.length === 0" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-3 rounded">
+          <p class="text-xs">Debe agregar al menos una cobertura para la póliza.</p>
+        </div>
+        
+        <div formArrayName="coberturas">
+          <div *ngFor="let cobertura of coberturasArray.controls; let i = index" [formGroupName]="i" 
+               class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 border border-gray-200 rounded-md shadow-sm">
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Nombre</label>
+              <input type="text" formControlName="nombre" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors" readonly>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Descripción</label>
+              <input type="text" formControlName="descripcion" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors" readonly>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Valor <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="valor" placeholder="Ingrese valor" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors">
+              <div *ngIf="coberturasArray.at(i).get('valor')?.invalid && coberturasArray.at(i).get('valor')?.touched" class="text-red-500 text-xs mt-1">
+                <span *ngIf="coberturasArray.at(i).get('valor')?.errors?.['required']">Valor es requerido</span>
+                <span *ngIf="coberturasArray.at(i).get('valor')?.errors?.['numberOnly']">Solo se permiten números</span>
+              </div>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Deducible</label>
+              <input type="text" formControlName="deducible" placeholder="Ingrese deducible" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors" readonly>
+            </div>
+            
+            <div class="relative pb-1">
+              <label class="absolute -top-5 left-0 text-xs font-medium text-gray-700">Sublímite</label>
+              <input type="text" formControlName="sublimite" placeholder="Ingrese sublímite" 
+                     class="w-full py-2 px-0 text-sm border-0 border-b border-gray-300 bg-transparent focus:ring-0 focus:border-[#d4af37] focus:border-b-2 transition-colors" readonly>
+            </div>
+            
+            <div class="col-span-1 md:col-span-2 flex justify-end">
+              <button type="button" (click)="removeCobertura(i)" 
+                      class="py-1 px-3 text-xs font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors">
+                Eliminar cobertura
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Botones de navegación -->
+    <div class="flex justify-between mt-8">
+      <button *ngIf="currentStep > 1" 
+              type="button" 
+              (click)="prevStep()" 
+              class="py-2 px-4 text-sm font-medium text-[#d4af37] border border-[#d4af37] rounded-md hover:bg-[#d4af37]/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50">
+        <span class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Anterior
+        </span>
+      </button>
+      
+      <div class="flex space-x-3">
+        <button *ngIf="currentStep < 3" 
+                type="button" 
+                (click)="nextStep()" 
+                class="py-2 px-4 text-sm font-medium text-white bg-[#d4af37] rounded-md hover:bg-[#c19b2e] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50">
+          <span class="flex items-center">
+            Siguiente
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </button>
+        
+        <button *ngIf="currentStep === 3" 
+                type="submit" 
+                [disabled]="policyForm.invalid || isSubmitting" 
+                class="py-2 px-4 text-sm font-medium text-white bg-[#d4af37] rounded-md hover:bg-[#c19b2e] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span *ngIf="!isSubmitting" class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Guardar póliza
+          </span>
+          <span *ngIf="isSubmitting" class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Guardando...
+          </span>
+        </button>
+        
+        <button type="button" 
+                (click)="cancel()" 
+                class="py-2 px-4 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

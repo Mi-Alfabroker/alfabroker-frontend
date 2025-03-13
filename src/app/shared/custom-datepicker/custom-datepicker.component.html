@@ -1,0 +1,164 @@
+<div class="relative pb-1 datepicker-container" [class.opacity-60]="disabled">
+  <label *ngIf="label" class="absolute -top-5 left-0 text-xs font-medium text-gray-700">
+    {{ label }} <span *ngIf="required" class="text-red-500">*</span>
+  </label>
+  
+  <!-- Input visible -->
+  <div 
+    class="w-full py-2 px-0 text-sm border-0 border-b transition-colors flex items-center justify-between cursor-pointer relative"
+    [class.border-red-500]="invalid"
+    [class.border-gray-300]="!invalid"
+    [class.focus:border-[#d4af37]]="!invalid"
+    [class.focus:border-b-2]="!invalid"
+    [class.bg-transparent]="!isOpen"
+    (click)="toggleCalendar($event)"
+  >
+    <div class="flex-grow truncate" [class.text-gray-400]="!displayValue">
+      {{ displayValue || placeholder }}
+    </div>
+    
+    <div class="flex items-center">
+      <button 
+        *ngIf="selectedDate" 
+        type="button" 
+        class="text-gray-400 hover:text-gray-600 mr-1 focus:outline-none"
+        (click)="clearDate($event)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    </div>
+    
+    <!-- Línea dorada animada -->
+    <div 
+      *ngIf="isOpen" 
+      class="absolute bottom-0 left-0 h-0.5 bg-[#d4af37] animate-expandWidth"
+      [class.w-full]="isOpen"
+    ></div>
+  </div>
+  
+  <!-- Input nativo oculto para accesibilidad -->
+  <input 
+    type="date" 
+    [value]="isoDate" 
+    (change)="onInputChange($event)" 
+    class="sr-only"
+    [disabled]="disabled"
+  >
+  
+  <!-- Calendario -->
+  <div 
+    *ngIf="isOpen" 
+    class="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2"
+    [class.calendar-above]="showAbove"
+    [style.width.px]="getCalendarWidth()"
+    [style.top.px]="getCalendarTopPosition()"
+    [style.left.px]="getCalendarLeftPosition()"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Encabezado del calendario -->
+    <div class="flex items-center justify-between mb-2">
+      <button 
+        type="button" 
+        class="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+        (click)="prevMonth($event)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      
+      <div class="flex items-center space-x-1">
+        <select 
+          class="text-sm font-medium text-gray-700 bg-transparent border-0 cursor-pointer focus:outline-none focus:ring-0 appearance-none pr-6 relative"
+          (change)="changeMonth($event)"
+          style="background: url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><polyline points=&quot;6 9 12 15 18 9&quot;></polyline></svg>') no-repeat right center; background-size: 16px;"
+        >
+          <option *ngFor="let month of months; let i = index" [value]="i" [selected]="i === currentMonth.getMonth()">
+            {{ month }}
+          </option>
+        </select>
+        
+        <select 
+          class="text-sm font-medium text-gray-700 bg-transparent border-0 cursor-pointer focus:outline-none focus:ring-0 appearance-none pl-1 pr-6 relative"
+          (change)="changeYear($event)"
+          style="background: url('data:image/svg+xml;charset=utf-8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><polyline points=&quot;6 9 12 15 18 9&quot;></polyline></svg>') no-repeat right center; background-size: 16px;"
+        >
+          <option *ngFor="let year of availableYears" [value]="year" [selected]="year === currentMonth.getFullYear()">
+            {{ year }}
+          </option>
+        </select>
+      </div>
+      
+      <button 
+        type="button" 
+        class="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+        (click)="nextMonth($event)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Días de la semana -->
+    <div class="grid grid-cols-7 gap-1 mb-1">
+      <div 
+        *ngFor="let day of weekDays" 
+        class="text-center text-xs font-medium text-gray-500 py-1"
+      >
+        {{ day }}
+      </div>
+    </div>
+    
+    <!-- Días del mes -->
+    <div class="grid grid-cols-7 gap-1">
+      <div 
+        *ngFor="let day of calendarDays" 
+        class="text-center text-xs py-1 rounded-full cursor-pointer"
+        [class.text-gray-400]="!day.isCurrentMonth"
+        [class.text-gray-700]="day.isCurrentMonth && !day.isToday && !day.isSelected"
+        [class.bg-blue-100]="day.isToday && !day.isSelected"
+        [class.text-blue-600]="day.isToday && !day.isSelected"
+        [class.font-medium]="day.isToday || day.isSelected"
+        [class.bg-[#d4af37]]="day.isSelected"
+        [class.text-white]="day.isSelected"
+        [class.opacity-40]="day.isDisabled"
+        [class.cursor-not-allowed]="day.isDisabled"
+        [class.hover:bg-gray-100]="!day.isSelected && !day.isDisabled"
+        (click)="selectDate(day, $event)"
+      >
+        {{ day.day }}
+      </div>
+    </div>
+    
+    <!-- Botones de acciones rápidas -->
+    <div class="flex justify-between mt-2 pt-2 border-t border-gray-200">
+      <button 
+        type="button" 
+        class="text-xs text-[#d4af37] hover:text-[#c19b2e] focus:outline-none"
+        (click)="selectToday($event)"
+      >
+        Hoy
+      </button>
+      
+      <button 
+        type="button" 
+        class="text-xs text-gray-500 hover:text-gray-700 focus:outline-none"
+        (click)="toggleCalendar($event)"
+      >
+        Cerrar
+      </button>
+    </div>
+  </div>
+  
+  <!-- Mensaje de error -->
+  <div *ngIf="invalid && errorMessage" class="text-red-500 text-xs mt-1">
+    {{ errorMessage }}
+  </div>
+</div>

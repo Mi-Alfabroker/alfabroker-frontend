@@ -1,0 +1,13 @@
+<div *ngIf="actualIsLoading" 
+     class="fixed inset-0 flex items-center justify-center z-[9999] bg-white/90 bg-opacity-70 backdrop-blur-sm transition-opacity duration-300"
+     [class.opacity-0]="!actualIsLoading"
+     [class.opacity-100]="actualIsLoading">
+  <div class="flex flex-col items-center">
+    <!-- Logo con animación de palpitación usando la clase nativa de Tailwind -->
+    <img src="logos/logo-alfa.png" alt="Alfa Logo" 
+         class="w-10 h-10 animate-[pulse_1.5s_ease-in-out_infinite]" />
+    
+    <!-- Mensaje de carga (opcional) -->
+    <p *ngIf="actualMessage" class="mt-4 text-gray-700 font-medium">{{ actualMessage }}</p>
+  </div>
+</div>

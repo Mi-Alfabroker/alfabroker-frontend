@@ -1,0 +1,65 @@
+/* Solo mantenemos las animaciones que no se pueden hacer fácilmente con Tailwind */
+@keyframes lineAnimation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* Estilos para la animación de la línea dorada */
+.animate-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #d4af37; /* Color dorado */
+  animation: lineAnimation 0.3s ease forwards;
+}
+
+/* Estilos para los inputs del formulario de póliza */
+
+/* Eliminar el outline negro predeterminado */
+:host ::ng-deep input:focus,
+:host ::ng-deep select:focus,
+:host ::ng-deep textarea:focus,
+:host ::ng-deep button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #d4af37 !important;
+}
+
+/* Estilo personalizado para inputs con borde inferior */
+:host ::ng-deep .border-b:focus {
+  border-bottom-width: 2px !important;
+  border-color: #d4af37 !important;
+}
+
+/* Estilo para inputs con borde completo */
+:host ::ng-deep .border:focus {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Estilos para los selectores personalizados */
+:host ::ng-deep app-custom-select .border:focus,
+:host ::ng-deep app-custom-datepicker .border:focus {
+  border-color: #d4af37 !important;
+  box-shadow: none !important;
+}
+
+/* Estilos para los inputs de tipo date */
+:host ::ng-deep input[type="date"]:focus {
+  border-color: #d4af37 !important;
+  box-shadow: none !important;
+}
+
+/* Estilos para los inputs dentro de componentes anidados */
+:host ::ng-deep .form-control:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #d4af37 !important;
+} 
